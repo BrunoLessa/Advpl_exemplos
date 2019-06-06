@@ -526,10 +526,10 @@ Static Function MntCab()
 	local oFont2 	:= TFont():New("Arial"      ,07,07,,.F.,,,,.F.,.F.) // CORPO DO TEXTO
 	local oFont3 	:= TFont():New("Arial"      ,12,12,,.T.,,,,.F.,.T.) // TITULO DO RELATORIO
 	local oFont4 	:= TFont():New("Arial"      ,09,09,,.T.,,,,,.F.,.F.) // CABECALHO
-	Local cNomEmp 	:= "REFLEXA - INDUSTRIA DE BEBIDAS REFLEXA LTDA."
-	Local cEndEmp 	:= "Rua Clóvis Bevilaqua, 285 - São Gonçalo, Rio de Janeiro "
-	Local cTelEmp 	:= "Tels:(21) 3715-8686 "
-	Local cFaxEmp 	:= "Fax: (21) 3715-8686 "
+	Local cNomEmp 	:= "NOME INDUSTRIA TESTE."
+	Local cEndEmp 	:= "Endereco teste - Cidade teste, Estado Teste"
+	Local cTelEmp 	:= "Tels:(xx) 9999-9999 "
+	Local cFaxEmp 	:= "Fax: (xx) 9999-9999 "
 	Local cEmitido  := "Emitido por: " + cUserName
 	Local cPagina   := "Página: " + strzero( nPag,3)
 	Local cTitRel   := "Apuração de Redes " 
