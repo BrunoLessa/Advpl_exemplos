@@ -2,24 +2,13 @@
 #Include "TopConn.ch"
 //***************************************************************************************************************************************************
 /*	Data: 08/08/2018
-	Programador: Bruno Lessa
-	Solicitante: Elince
-	Motivo: Melhorias
-	
-/*	Controle de Alterações **************************************************************************************************************************
-	Versao:1.2 
-	Data:14/11/18        
-	Programador: Bruno Lessa
-	Alteracao: 
-	Solicitante: Dione
-	Motivo: Formula do edson estava diferente
-*/
-/*	Controle de Alterações **************************************************************************************************************************
+	Programador: Bruno Lessa	
+	Motivo: Melhorias	
+/*	Controle de AlteraÃ§Ãµes **************************************************************************************************************************
 	Versao:1.2 
 	Data:27/12/18        
 	Programador: Bruno Lessa
-	Alteracao: 
-	Solicitante: Dione
+	Alteracao: 	
 	Motivo: Importar para o Excel
 */
 User Function  REFR016
@@ -49,7 +38,7 @@ User Function  REFR016
     Private oFWMsExcel
     Private oExcel	
 	Private lCorLin		// variavel que indica se a linha sera colorida ou nao
-	Private lFirstPage	:= .T.	// indicador se é a primeira pagina do relatorio
+	Private lFirstPage	:= .T.	// indicador se Ã© a primeira pagina do relatorio
 	Private nPag		:= 1	// numero de paginas do relatorio
 	Private nLin		:= 420	// quantidade de linhas do relatorio
 	Private aCabeca	    := {}	
@@ -57,11 +46,11 @@ User Function  REFR016
 	Private lChkRel := .F.	
 	Static oDlg
 
-  DEFINE MSDIALOG oDlg TITLE "Apuração de Redes de Clientes" FROM 000, 000  TO 260, 290 COLORS 0, 16777215 PIXEL
+  DEFINE MSDIALOG oDlg TITLE "ApuraÃ§Ã£o de Redes de Clientes" FROM 000, 000  TO 260, 290 COLORS 0, 16777215 PIXEL
 
-    @ 000, 002 GROUP oGroup1 TO 095, 142 PROMPT "Parâmetros: " OF oDlg COLOR 0, 16777215 PIXEL
+    @ 000, 002 GROUP oGroup1 TO 095, 142 PROMPT "ParÃ¢metros: " OF oDlg COLOR 0, 16777215 PIXEL
     @ 010, 007 SAY oSay1 PROMPT "Rede de Clientes: " SIZE 045, 007 OF oDlg COLORS 0, 16777215 PIXEL
-    @ 008, 052 MSCOMBOBOX oCmbTpCli VAR cCmbTpCli ITEMS {"001=Grand Marchê","002=Super Marketing"} SIZE 072, 010 OF oDlg COLORS 0, 16777215 PIXEL On Change( Iif( cCmbTpCli !='001',oPerc:lActive := .F., oPerc:lActive := .T.))
+    @ 008, 052 MSCOMBOBOX oCmbTpCli VAR cCmbTpCli ITEMS {"001=Grand MarchÃª","002=Super Marketing"} SIZE 072, 010 OF oDlg COLORS 0, 16777215 PIXEL On Change( Iif( cCmbTpCli !='001',oPerc:lActive := .F., oPerc:lActive := .T.))
     @ 023, 007 SAY oSay2 PROMPT "Marca de Prod.:" SIZE 040, 007 OF oDlg COLORS 0, 16777215 PIXEL
     @ 021, 052 MSCOMBOBOX oCmbTpPr VAR cCmbTpPr ITEMS {"01=Todos","02=Mineirinho","03=Flexa"} SIZE 072, 010 OF oDlg COLORS 0, 16777215 PIXEL  
 
@@ -71,8 +60,8 @@ User Function  REFR016
     @ 051, 007 SAY oSay4 PROMPT "Periodo:" SIZE 025, 007 OF oDlg COLORS 0, 16777215 PIXEL
     @ 049, 052 MSGET oDperiodo VAR dDperiodo SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
     @ 064, 007 SAY oSay5 PROMPT "Tipo:" SIZE 025, 007 OF oDlg COLORS 0, 16777215 PIXEL
-    @ 065, 052 MSCOMBOBOX oCmbTipo VAR cCmbTipo ITEMS {"01=Analítico","02=Sintético"} SIZE 072, 010 OF oDlg COLORS 0, 16777215 PIXEL
-   	@ 081, 020 CHECKBOX oChkBx1 VAR lChkRel PROMPT "&Relatório" SIZE 048, 007 OF oDlg COLORS 0, 16777215 PIXEL
+    @ 065, 052 MSCOMBOBOX oCmbTipo VAR cCmbTipo ITEMS {"01=AnalÃ­tico","02=SintÃ©tico"} SIZE 072, 010 OF oDlg COLORS 0, 16777215 PIXEL
+   	@ 081, 020 CHECKBOX oChkBx1 VAR lChkRel PROMPT "&RelatÃ³rio" SIZE 048, 007 OF oDlg COLORS 0, 16777215 PIXEL
    	@ 081, 090 CHECKBOX oChkBx2 VAR lChkExc PROMPT "&Excel" SIZE 048, 008 OF oDlg COLORS 0, 16777215 PIXEL
 
     DEFINE SBUTTON oSButton1 FROM 110, 011 TYPE 02 OF oDlg Action(oDlg:End())  ENABLE
@@ -84,7 +73,7 @@ Return
 //*****************************************************************************************************************************************************
 Static Function ValidPar()	
     If !lChkRel .And. !lChkExc
-    	MsgAlert('Favor selecionar a marcar a opção desejada [ relatório, Excel ou ambos ]','Atenção!')
+    	MsgAlert('Favor selecionar a marcar a opÃ§Ã£o desejada [ relatÃ³rio, Excel ou ambos ]','AtenÃ§Ã£o!')
     	Return
     EndIf 
 	CriaDir()        
@@ -203,7 +192,7 @@ Static Function ProcArq(cQuery)
 	cTMP->(dbGoTop())
 	
 	If nTotReg <= 0
-		Alert("Nenhuma informação para exibir, favor verifique os parametros")
+		Alert("Nenhuma informaÃ§Ã£o para exibir, favor verifique os parametros")
 		cTMP->(dbCloseArea())
 		return
 	EndIf 	
@@ -249,7 +238,7 @@ Static Function ProcArq(cQuery)
     
 		If cCmbTipo = '01' // analitico
 			aCabeca := {}
-			aAdd( aCabeca,{ Nil  	,"Código"		 			   						} )
+			aAdd( aCabeca,{ Nil  	,"CÃ³digo"		 			   						} )
 			aAdd( aCabeca,{ ((oRelat:nHorzRes() * 010)/100)	,"Cliente" 					} )
 			aAdd( aCabeca,{ ((oRelat:nHorzRes() * 030)/100)	,"Setor" 					} )
 			aAdd( aCabeca,{ ((oRelat:nHorzRes() * 035)/100)	,"Cod. Prod."				} )		
@@ -260,7 +249,7 @@ Static Function ProcArq(cQuery)
    		ElseIf cCmbTipo = '02' // sintetico
 
 			aCabeca := {}
-			aAdd( aCabeca,{ Nil  	,"Código"		 			   						} )
+			aAdd( aCabeca,{ Nil  	,"CÃ³digo"		 			   						} )
 			aAdd( aCabeca,{ ((oRelat:nHorzRes() * 010)/100)	,"Cliente" 					} )
 			aAdd( aCabeca,{ ((oRelat:nHorzRes() * 040)/100)	,"Setor" 					} )
 			aAdd( aCabeca,{ ((oRelat:nHorzRes() * 060)/100)	,"Volume"					} )		
@@ -269,7 +258,7 @@ Static Function ProcArq(cQuery)
 	   	EndIf
 	
 		For nI := 1 To Len(aDados)
-			MsProcTxt("Montando relatório do cliente:" + Trim(aDados[nI][1]))	  
+			MsProcTxt("Montando relatÃ³rio do cliente:" + Trim(aDados[nI][1]))	  
 
 			If cCmbTipo = '01' //Analitico
 				If nI = 1 
@@ -357,14 +346,14 @@ Static Function ProcArq(cQuery)
 		If cCmbTipo = '01' // analitico
 		
 			If cCmbTpCli = '001'
-				cTitRel := "Apuracao de Redes de Clientes Grand Marchê Analitico"
+				cTitRel := "Apuracao de Redes de Clientes Grand MarchÃª Analitico"
 			ElseIf cCmbTpCli = '002'
 				cTitRel := "Apuracao de Redes de Clientes Super Marketing Analitico"
 			EndIf
 			
 			oFWMsExcel:AddworkSheet("Dados") 
 			oFWMsExcel:AddTable("Dados",cTitRel)
-			oFWMsExcel:AddColumn("Dados",cTitRel,"Código",1,1)
+			oFWMsExcel:AddColumn("Dados",cTitRel,"CÃ³digo",1,1)
 			oFWMsExcel:AddColumn("Dados",cTitRel,"Cliente",1,1)
 			oFWMsExcel:AddColumn("Dados",cTitRel,"Setor",1,1)
 			oFWMsExcel:AddColumn("Dados",cTitRel,"Cod. Prod.",1,1)						
@@ -373,7 +362,7 @@ Static Function ProcArq(cQuery)
 			oFWMsExcel:AddColumn("Dados",cTitRel,"Faturamento",3,3)			
 			
 			For nI := 1 To Len(aDados)
-				MsProcTxt("Montando relatório do cliente:" + Trim(aDados[nI][1]))	  
+				MsProcTxt("Montando relatÃ³rio do cliente:" + Trim(aDados[nI][1]))	  
 	    		lCab 	:= .F.
 	    		cForn   := aDados[nI][1]
 				nTotQtd := 0
@@ -456,20 +445,20 @@ Static Function ProcArq(cQuery)
    		ElseIf cCmbTipo = '02' // sintetico
 			
 			If cCmbTpCli = '001'
-				cTitRel := "Apuracao de Redes de Clientes Grand Marchê Sintetico"
+				cTitRel := "Apuracao de Redes de Clientes Grand MarchÃª Sintetico"
 			ElseIf cCmbTpCli = '002'
 				cTitRel := "Apuracao de Redes de Clientes Super Marketing Sintetico"
 			EndIf
 			
 			oFWMsExcel:AddworkSheet("Dados") 
 			oFWMsExcel:AddTable("Dados",cTitRel)
-			oFWMsExcel:AddColumn("Dados",cTitRel,"Código",1,1)
+			oFWMsExcel:AddColumn("Dados",cTitRel,"CÃ³digo",1,1)
 			oFWMsExcel:AddColumn("Dados",cTitRel,"Cliente",1,1)
 			oFWMsExcel:AddColumn("Dados",cTitRel,"Setor",1,1)
 			oFWMsExcel:AddColumn("Dados",cTitRel,"Volume",2,2)
 			oFWMsExcel:AddColumn("Dados",cTitRel,"Faturamento",3,3)			
 			For nI := 1 To Len(aDados)
-				MsProcTxt("Montando relatório do cliente:" + Trim(aDados[nI][1]))	  
+				MsProcTxt("Montando relatÃ³rio do cliente:" + Trim(aDados[nI][1]))	  
 				oFWMsExcel:AddRow("Dados",cTitRel, {;
 								   Trim(OemToAnsi(aDados[nI][1])),;
 								   Trim(OemToAnsi(aDados[nI][2])),;
@@ -497,7 +486,7 @@ Static Function ProcArq(cQuery)
    		EndIf
 	    oFWMsExcel:Activate()
     	oFWMsExcel:GetXMLFile(cPath + '\' + cNomArq + '.xml')
-	    oExcel := MsExcel():New()             //Abre uma nova conexão com Excel
+	    oExcel := MsExcel():New()             //Abre uma nova conexÃ£o com Excel
     	oExcel:WorkBooks:Open(cPath + '\' + cNomArq + '.xml')     //Abre uma planilha
 	    oExcel:SetVisible(.T.)                 //Visualiza a planilha
     	oExcel:Destroy()      	   					
@@ -508,7 +497,7 @@ Static Function CriaDir()
 
 	If !ExistDir( cPath )
 		If MakeDir( cPath )  != 0
-			Alert( "Não foi possível criar o diretório. Erro: " + cValToChar( FError() ) )
+			Alert( "NÃ£o foi possÃ­vel criar o diretÃ³rio. Erro: " + cValToChar( FError() ) )
 		EndIf
 	EndIf
    
@@ -537,18 +526,18 @@ Static Function MntCab()
 	local oFont3 	:= TFont():New("Arial"      ,12,12,,.T.,,,,.F.,.T.) // TITULO DO RELATORIO
 	local oFont4 	:= TFont():New("Arial"      ,09,09,,.T.,,,,,.F.,.F.) // CABECALHO
 	Local cNomEmp 	:= "REFLEXA - INDUSTRIA DE BEBIDAS REFLEXA LTDA."
-	Local cEndEmp 	:= "Rua Clóvis Bevilaqua, 285 - São Gonçalo, Rio de Janeiro "
+	Local cEndEmp 	:= "Rua ClÃ³vis Bevilaqua, 285 - SÃ£o GonÃ§alo, Rio de Janeiro "
 	Local cTelEmp 	:= "Tels:(21) 3715-8686 "
 	Local cFaxEmp 	:= "Fax: (21) 3715-8686 "
 	Local cEmitido  := "Emitido por: " + cUserName
-	Local cPagina   := "Página: " + strzero( nPag,3)
-	Local cTitRel   := "Apuração de Redes " 
+	Local cPagina   := "PÃ¡gina: " + strzero( nPag,3)
+	Local cTitRel   := "ApuraÃ§Ã£o de Redes " 
 	Local cArqBmp   :=  GetSrvProfString("StartPath", "\system_INDUSTRIA") + "\lgrl05.bmp"
 	Local nTam      := 0 
 	Local nI        := 0
 
 	If cCmbTpCli = '001'
-		cTitRel += "Grand Marchê"
+		cTitRel += "Grand MarchÃª"
 	ElseIf cCmbTpCli = '002'
 		cTitRel += "Super Marketing"
 	EndIf
@@ -589,9 +578,9 @@ Static Function MntRod()
 
 //	cTxtRod 	:= "Filial:  " + cFilDe + " a " + cFilAte + Space(10)
 	cTxtRod     := "Periodo: " + AnoMes(dDperiodo)  + Space(10)
-    cTxtRod     += "Rede de Clientes :" + Iif( cCmbTpCli ='001','Grand Marchê','Super Marketing') + Space(10)
+    cTxtRod     += "Rede de Clientes :" + Iif( cCmbTpCli ='001','Grand MarchÃª','Super Marketing') + Space(10)
     cTxtRod     += "Marca: " +  Iif(cCmbTpPr='01','Todos',Iif(cCmbTpPr='02','Mineirinho','Todos')) + Space(10)
-    cTxtRod     += "Percentual: " + Iif( cCmbTpCli ='001',Transform(nPerc,"@E 999.99%"),'Não se aplica') + Space(10)
+    cTxtRod     += "Percentual: " + Iif( cCmbTpCli ='001',Transform(nPerc,"@E 999.99%"),'NÃ£o se aplica') + Space(10)
 	oRelat:Line( nMaxLin,nIniCol,nMaxLin,nMaxCol )
 	oRelat:Say(nMaxLin + 40, 0230, cTxtRod, oFont2, 100)
 
@@ -600,7 +589,7 @@ Return
 //*********************************************************************************************************************************
 Static Function EscRel( cConteudo , nIniCol, lPulLin, lCab , lNegrito , nAlign, lCorlin,lLinha )
 
-	Local 	nLinc   	:= 50 // espaçamento entre as linhas
+	Local 	nLinc   	:= 50 // espaÃ§amento entre as linhas
 	Local	nMaxLin 	:= oRelat:nVertRes() -100 // Maximo de linhas
 	Local 	nMaxCol 	:= oRelat:nHorzRes() -50
 	Local 	oBrush1 	:= TBrush():New( , RGB(230, 230, 250) )
@@ -616,7 +605,7 @@ Static Function EscRel( cConteudo , nIniCol, lPulLin, lCab , lNegrito , nAlign, 
     Default lLinha		:= .F.
                                                                                   
 	If nLin > nMaxLin  .Or. lFirstPage
-		MntRod() 						// Funcao que monta o rodapé padrao
+		MntRod() 						// Funcao que monta o rodapÃ© padrao
 		If !lFirstPage
 			nPag ++
 			oRelat:EndPage()    // Finaliza a pagina
