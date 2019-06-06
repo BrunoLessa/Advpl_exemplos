@@ -2,8 +2,7 @@
 #Include "TopConn.ch"
 //***************************************************************************************************************************************************
 /*	Data: 08/08/2018
-	Programador: Bruno Lessa
-	Solicitante: Elince
+	Programador: Bruno Lessa	
 	Motivo: Melhorias	
 */
 User Function  REFR020
@@ -29,7 +28,7 @@ User Function  REFR020
     Private oFWMsExcel
     Private oExcel	
 	Private lCorLin		// variavel que indica se a linha sera colorida ou nao
-	Private lFirstPage	:= .T.	// indicador se é a primeira pagina do relatorio
+	Private lFirstPage	:= .T.	// indicador se Ã© a primeira pagina do relatorio
 	Private nPag		:= 1	// numero de paginas do relatorio
 	Private nLin		:= 420	// quantidade de linhas do relatorio
 	Private aCabeca	    := {}	
@@ -39,14 +38,14 @@ User Function  REFR020
 
   DEFINE MSDIALOG oDlg TITLE "ANALISE GERENCIAL ANO X ANO" FROM 000, 000  TO 260, 290 COLORS 0, 16777215 PIXEL
 
-    @ 000, 002 GROUP oGroup1 TO 095, 142 PROMPT "Parâmetros: " OF oDlg COLOR 0, 16777215 PIXEL
+    @ 000, 002 GROUP oGroup1 TO 095, 142 PROMPT "ParÃ¢metros: " OF oDlg COLOR 0, 16777215 PIXEL
     @ 010, 007 SAY oSay1 PROMPT "Marca de Prod.:" SIZE 040, 007 OF oDlg COLORS 0, 16777215 PIXEL
     @ 008, 052 MSCOMBOBOX oCmbTpPr VAR cCmbTpPr ITEMS {"01=Todos","02=Mineirinho","03=Flexa"} SIZE 072, 010 OF oDlg COLORS 0, 16777215 PIXEL  
     @ 036, 007 SAY oSay2 PROMPT "Periodo Ini:" SIZE 040, 007 OF oDlg COLORS 0, 16777215 PIXEL
     @ 034, 052 MSGET oPerIni VAR dPerIni SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
     @ 051, 007 SAY oSay3 PROMPT "Periodo Fin:" SIZE 040, 007 OF oDlg COLORS 0, 16777215 PIXEL
     @ 049, 052 MSGET oPerFin VAR dPerFin SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
-   	@ 081, 020 CHECKBOX oChkBx1 VAR lChkRel PROMPT "&Relatório" SIZE 048, 007 OF oDlg COLORS 0, 16777215 PIXEL
+   	@ 081, 020 CHECKBOX oChkBx1 VAR lChkRel PROMPT "&RelatÃ³rio" SIZE 048, 007 OF oDlg COLORS 0, 16777215 PIXEL
    	@ 081, 090 CHECKBOX oChkBx2 VAR lChkExc PROMPT "&Excel" SIZE 048, 008 OF oDlg COLORS 0, 16777215 PIXEL
 	lChkRel := .T.
 	oChkBx2:lReadOnly := .T. 
@@ -60,7 +59,7 @@ Return
 //*****************************************************************************************************************************************************
 Static Function ValidPar()	
     If !lChkRel .And. !lChkExc
-    	MsgAlert('Favor selecionar a marcar a opção desejada [ relatório, Excel ou ambos ]','Atenção!')
+    	MsgAlert('Favor selecionar a marcar a opÃ§Ã£o desejada [ relatÃ³rio, Excel ou ambos ]','AtenÃ§Ã£o!')
     	Return
     EndIf 
 	CriaDir()        
@@ -156,7 +155,7 @@ Static Function ProcArq(cQuery)
 	cTMP->(dbGoTop())
 	
 	If nTotReg <= 0
-		Alert("Nenhuma informação para exibir, favor verifique os parametros")
+		Alert("Nenhuma informaÃ§Ã£o para exibir, favor verifique os parametros")
 		cTMP->(dbCloseArea())
 		return
 	EndIf 	
@@ -223,7 +222,7 @@ Static Function ProcArq(cQuery)
 		aAdd( aCabeca,{ ((oRelat:nHorzRes() * 093)/100)	,"Total Ano"				} )												
 	
 		For nI := 1 To Len(aDados)
-			MsProcTxt("Montando relatório do Ano:" + Trim(aDados[nI][1]))	  
+			MsProcTxt("Montando relatÃ³rio do Ano:" + Trim(aDados[nI][1]))	  
 			If Mod(nI,2) = 0
 				EscRel(Trim(cValtochar(aDados[nI][1])) , , , , , , .T.) 
 			Else
@@ -266,7 +265,7 @@ Static Function ProcArq(cQuery)
 		EndRel()	    
 	EndIf
 	
-	If lChkExc // Não utilizo no momento
+	If lChkExc // NÃ£o utilizo no momento
 	EndIf
 return
 //*****************************************************************************************************************************************************
@@ -274,7 +273,7 @@ Static Function CriaDir()
 
 	If !ExistDir( cPath )
 		If MakeDir( cPath )  != 0
-			Alert( "Não foi possível criar o diretório. Erro: " + cValToChar( FError() ) )
+			Alert( "NÃ£o foi possÃ­vel criar o diretÃ³rio. Erro: " + cValToChar( FError() ) )
 		EndIf
 	EndIf
    
@@ -302,12 +301,12 @@ Static Function MntCab()
 	local oFont2 	:= TFont():New("Arial"      ,07,07,,.F.,,,,.F.,.F.) // CORPO DO TEXTO
 	local oFont3 	:= TFont():New("Arial"      ,12,12,,.T.,,,,.F.,.T.) // TITULO DO RELATORIO
 	local oFont4 	:= TFont():New("Arial"      ,09,09,,.T.,,,,,.F.,.F.) // CABECALHO
-	Local cNomEmp 	:= "REFLEXA - INDUSTRIA DE BEBIDAS REFLEXA LTDA."
-	Local cEndEmp 	:= "Rua Clóvis Bevilaqua, 285 - São Gonçalo, Rio de Janeiro "
-	Local cTelEmp 	:= "Tels:(21) 3715-8686 "
-	Local cFaxEmp 	:= "Fax: (21) 3715-8686 "
+	Local cNomEmp 	:= "Industria Teste."
+	Local cEndEmp 	:= "Endereco teste, cidade teste, Estado Teste "
+	Local cTelEmp 	:= "Tels:(xx) 9999-9999 "
+	Local cFaxEmp 	:= "Fax: (xx) 9999-9999 "
 	Local cEmitido  := "Emitido por: " + cUserName
-	Local cPagina   := "Página: " + strzero( nPag,3)
+	Local cPagina   := "PÃ¡gina: " + strzero( nPag,3)
 	Local cTitRel   := "Analise Gerencial Ano x Ano"
 	Local cArqBmp   :=  GetSrvProfString("StartPath", "\system_INDUSTRIA") + "\lgrl05.bmp"
 	Local nTam      := 0 
@@ -355,7 +354,7 @@ Return
 //*********************************************************************************************************************************
 Static Function EscRel( cConteudo , nIniCol, lPulLin, lCab , lNegrito , nAlign, lCorlin,lLinha )
 
-	Local 	nLinc   	:= 50 // espaçamento entre as linhas
+	Local 	nLinc   	:= 50 // espaÃ§amento entre as linhas
 	Local	nMaxLin 	:= oRelat:nVertRes() -100 // Maximo de linhas
 	Local 	nMaxCol 	:= oRelat:nHorzRes() -50
 	Local 	oBrush1 	:= TBrush():New( , RGB(230, 230, 250) )
@@ -371,7 +370,7 @@ Static Function EscRel( cConteudo , nIniCol, lPulLin, lCab , lNegrito , nAlign, 
     Default lLinha		:= .F.
                                                                                   
 	If nLin > nMaxLin  .Or. lFirstPage
-		MntRod() 						// Funcao que monta o rodapé padrao
+		MntRod() 						// Funcao que monta o rodapÃ© padrao
 		If !lFirstPage
 			nPag ++
 			oRelat:EndPage()    // Finaliza a pagina
