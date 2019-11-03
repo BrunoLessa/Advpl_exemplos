@@ -38,11 +38,11 @@ User Function CfApont(cFile)
 Return 
 //************************************************************************************************************************************
 Static Function Valida(cFile)
-	Local lRet    := .T.
-	Local cQry    := ''
-	Local cTMP    := GetNextAlias()
-	Local cTMP2   := GetNextAlias()	
-	Local aArea   := GetArea()   
+    Local lRet    := .T.
+    Local cQry    := ''
+    Local cTMP    := GetNextAlias()
+    Local cTMP2   := GetNextAlias()	
+    Local aArea   := GetArea()   
 	
     cQry := "SELECT " + CRLF
     cQry += "  C2_FILIAL,  " + CRLF
@@ -100,38 +100,38 @@ Static Function Valida(cFile)
     cQry += "   SC2.D_E_L_E_T_ =' ' "
      
 	
-	If Select( cTMP ) <> 0
-		dbSelectArea( cTMP )
-		dbCloseArea()
-	EndIf
+     If Select( cTMP ) <> 0
+	dbSelectArea( cTMP )
+	dbCloseArea()
+     EndIf
 	
-	TcQuery cQry Alias cTMP New
-	//acertar para continuar o relatorio	
-	Count To nTotReg                                
-	cTMP->(dbGoTop())
+      TcQuery cQry Alias cTMP New
+       //acertar para continuar o relatorio	
+       Count To nTotReg                                
+      cTMP->(dbGoTop())
 	
-	If nTotReg <= 0		
-	  	cTMP->(dbCloseArea())
-	  	RestArea(aArea)	  		  		  	
-	  	msgAlert("Não há registros para essa Ordem de produção, favor verificar o cadastro de Ordens de produção!","Atenção!!!")
-	    cGetBar := Space(16)
-	    oGetBar:Refresh() 
-	    oDlg:Refresh()	  	
-	  	return .F.				
-	EndIf 	
+      If nTotReg <= 0		
+	 cTMP->(dbCloseArea())
+	 RestArea(aArea)	  		  		  	
+	 msgAlert("Não há registros para essa Ordem de produção, favor verificar o cadastro de Ordens de produção!","Atenção!!!")
+	 cGetBar := Space(16)
+	 oGetBar:Refresh() 
+	 oDlg:Refresh()	  	
+	 return .F.				
+       EndIf 	
 	
-	While cTMP->(!Eof())
-	    If Empty(cTMP->OP_PA4)
-			lRet := .F.   
-			msgAlert("Etiqueta não ativa no setup, favor checar cadastro de setup de linha!","Atenção!!!")
-		ElseIf cTMP->B1_MSBLQL ='1'
-			lRet := .F.   
-			msgAlert("O produto a ser apontado encontra-se bloqueado, favor verificar o cadastro do mesmo!","Atenção!!!")
-		ElseIf cTMP->B1_TIPO  != 'PA'
-			lRet := .F.   
-			msgAlert("Não é permitido apontamento de produção automático para produtos diferentes do tipo PA, entre em contato com o administrador do sistema!","Atenção!!!")							  	  	  
-		ElseIf cTMP->C2_STATUS != 'N'
-		    lRet := .F.
+       While cTMP->(!Eof())
+	  If Empty(cTMP->OP_PA4)
+		lRet := .F.   
+		msgAlert("Etiqueta não ativa no setup, favor checar cadastro de setup de linha!","Atenção!!!")
+	  ElseIf cTMP->B1_MSBLQL ='1'
+		lRet := .F.   
+		msgAlert("O produto a ser apontado encontra-se bloqueado, favor verificar o cadastro do mesmo!","Atenção!!!")
+	  ElseIf cTMP->B1_TIPO  != 'PA'
+		lRet := .F.   
+		msgAlert("Não é permitido apontamento de produção automático para produtos diferentes do tipo PA, entre em contato com o administrador do sistema!","Atenção!!!")							  	  	  
+	  ElseIf cTMP->C2_STATUS != 'N'
+	      lRet := .F.
 		    msgAlert("Não é permitido o apontamento de produção para OPs que não estejam em situação normal, favor verificar o cadastro da op!","Atenção!!!")
 		ElseIf cTMP->C2_TPOP != 'F'
 		    lRet := .F.
@@ -145,11 +145,11 @@ Static Function Valida(cFile)
 		ElseIf cTMP->CSTATUS_ETQ = 'C'       
 			lRet := .F.
 			msgAlert("Etiqueta cancelada!","Atenção!!!")
-		EndIf
-		cDescPrd := AllTrim(cTMP->B1_DESC)
-        nHPallet := cTMP->B5_COMPR
-        nLPallet := cTMP->B5_LARG
-		cTMP->(dbSkip())		
+	  EndIf
+	  cDescPrd := AllTrim(cTMP->B1_DESC)
+          nHPallet := cTMP->B5_COMPR
+          nLPallet := cTMP->B5_LARG
+	  cTMP->(dbSkip())		
 	EndDo   
 	cTMP->(dbCloseArea())
 	RestArea(aArea)
