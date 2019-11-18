@@ -50,7 +50,6 @@ User Function CfApont()
     
   ACTIVATE MSDIALOG oDlg CENTERED
   
-  oDlg:End()
   _ET->(dbCloseArea())     
   restArea(aMainArea)
 Return 
@@ -93,7 +92,7 @@ Static Function Valida(cFile)
   cQry += "JOIN " + CRLF
   cQry += "	" + retSqlName("SB1") + " SB1 " + CRLF
   cQry += "ON " + CRLF
-  //cQry += "   C2_FILIAL = B1_FILIAL AND  " + CRLF
+  cQry += " C2_FILIAL = B1_FILIAL AND  " + CRLF
   cQry += "	C2_PRODUTO = B1_COD AND    " + CRLF
   cQry += "	SB1.D_E_L_E_T_ =' '	       " + CRLF
   cQry += "LEFT JOIN
@@ -106,18 +105,18 @@ Static Function Valida(cFile)
   cQry += "	" + cTabela + " ETQ" + CRLF
   cQry += "ON " + CRLF
   cQry += "	C2_FILIAL = FILIAL AND     " + CRLF
-  cQry += "	C2_NUM    =  OP    AND     " + CRLF
+  cQry += "	C2_NUM+C2_ITEM+C2_SEQUEN  =  OP    AND     " + CRLF
   cQry += "	ETIQUETA ='" + AllTrim(cGetBar) + "'    AND     " + CRLF
   cQry += "	ETQ.D_E_L_E_T_ = ' '       " + CRLF
   cQry += "LEFT JOIN " + CRLF
-  cQry += "	PA4990 PA4" + CRLF
+  cQry += "	" + retSqlName("PA4") + " PA4 " + CRLF
   cQry += "ON" + CRLF
   cQry += " C2_FILIAL = PA4.PA4_FILIAL AND " + CRLF
-  cQry += "	C2_NUM    = PA4.PA4_OP AND " + CRLF
+  cQry += "	C2_NUM+C2_ITEM+C2_SEQUEN = PA4.PA4_OP AND " + CRLF
   cQry += "	PA4.D_E_L_E_T_ =' ' " + CRLF
   cQry += "WHERE " + CRLF
   cQry += " C2_FILIAL = '" +cFilAnt +"' AND " + CRLF
-  cQry += " C2_NUM    = '" + AllTrim(cGetBar) + "' AND " + CRLF
+  cQry += " C2_NUM    = '" + Substr(AllTrim(cGetBar),10,6) + "' AND " + CRLF
   cQry += " SC2.D_E_L_E_T_ =' ' "
   
   MemoWrite('C:\Temp_Msiga\qry.sql',cQry)   	
@@ -261,8 +260,8 @@ Static Function Aponta(nQuant,cFile)
   Local cNumSeq := ''
   Local cTime   := ''
   Local aVetor  := {}
-  Local cTM     := Alltrim(SuperGetMv( "MV_XTMPRO" , , "010"  )) 
-  Local lAtuemp := Alltrim(SuperGetMv( "MV_XATEMP" , , .F.    ))  
+  Local cTM     := Alltrim(SuperGetMv( "MV_XTMPRO" ,.F. , "010"  )) 
+  Local lAtuemp := Alltrim(SuperGetMv( "MV_XATEMP" ,.F. , "F"    ))  
   lMsErroAuto   := .F.
   
        
@@ -271,16 +270,17 @@ Static Function Aponta(nQuant,cFile)
              {'D3_OP'     , cNumOrdP+cIteOrdP+cSeqOrdP ,Nil},;
              {'D3_COD'    , cCodPrd                    ,Nil},;
              {'D3_QUANT'  , nQuant                     ,Nil},;
+             {'D3_EMISSAO', Date()                     ,Nil},;
              {'D3_PARCTOT', 'P'                        ,Nil},;
              {'ATUEMP'    , 'T'                        ,Nil},;
              {'D3_TM'     , cTM                        ,Nil},;
              {'D3_QTMAIOR', 0                          ,Nil},;              
-             {'D3_XETIQ'  , cGetBar                    ,Nil},;
+             {'D3_XETIQ'  , Substr(cGetBar,1,8)        ,Nil},;
              {'D3_XHORA'  , cTime                      ,Nil},;
              {'D3_XLINHA' , cLinOp                     ,Nil};                                                                       
             }
                          
-  If lAtuEmp
+  If lAtuEmp == "T"
   	aAdd(aVetor,{'ATUEMP' , T ,Nil} )
   EndIf
   
@@ -301,7 +301,7 @@ Static Function Aponta(nQuant,cFile)
       RecLock("_ET",.T.)
       _ET->FILIAL   := cFilant
       _ET->ETIQUETA := AllTrim(cGetBar)
-      _ET->OP       := cNumOrdP
+      _ET->OP       := cNumOrdP+cIteOrdP+cSeqOrdP
       _ET->PRODUTO  := cCodPrd
       _ET->LOTEPRD  := ''
       _ET->CSTATUS  := 'A'
@@ -313,7 +313,7 @@ Static Function Aponta(nQuant,cFile)
       RecLock("_ET",.F.)
       _ET->FILIAL   := cFilant
       _ET->ETIQUETA := AllTrim(cGetBar)
-      _ET->OP       := cNumOrdP
+      _ET->OP       := cNumOrdP+cIteOrdP+cSeqOrdP
       _ET->PRODUTO  := cCodPrd
       _ET->LOTEPRD  := ''
       _ET->CSTATUS  := 'A'
@@ -346,27 +346,27 @@ Static Function OpenTbl()
     
     If !tccanopen(cTabela,cTabela+'_01')
       // Se o indice por nome nao existe, cria
-      USE (cTabela) ALIAS (&cTabAli) EXCLUSIVE NEW VIA "TOPCONN"    
+      USE (cTabela) ALIAS "_ET" EXCLUSIVE NEW VIA "TOPCONN"    
       DBCreateIndex(cTabela+'_01', "FILIAL+ETIQUETA" , {|| FILIAL+ETIQUETA }) 	
       USE
     EndIf
     
     If !tccanopen(cTabela,cTabela+'_02')  
-      USE (cTabela) ALIAS (&cTabAli) EXCLUSIVE NEW VIA "TOPCONN"       
+      USE (cTabela) ALIAS  "_ET"  EXCLUSIVE NEW VIA "TOPCONN"       
       DBCreateIndex(cTabela+'_02', "FILIAL+OP" , {|| FILIAL+OP })  
       USE
     EndIf
 
     If !tccanopen(cTabela,cTabela+'_UNQ')    
-      USE (cTabela) ALIAS (&cTabAli) EXCLUSIVE NEW VIA "TOPCONN"           
-      TCUnique(cTabela, "FILIAL+ETIQUETA+OP")
+      USE (cTabela) ALIAS  "_ET" EXCLUSIVE NEW VIA "TOPCONN"           
+      TCUnique(cTabela, "FILIAL+ETIQUETA")
       USE
     EndIf  
        
   Endif
 
   // Abra o arquivo de agenda em modo compartilhado
-  USE (cTabela) ALIAS &cTabAli SHARED NEW VIA "TOPCONN"
+  USE (cTabela) ALIAS  "_ET" SHARED NEW VIA "TOPCONN"
   // Liga o filtro para ignorar registros deletados 
   SET DELETED ON
   // Abre os indices, seleciona ordem por ID
