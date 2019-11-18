@@ -12,13 +12,17 @@ Description
 /*/                                                             
 //--------------------------------------------------------------
 User Function CfApont()
+  Local aMainArea := GetArea()
   Local oGroup1
   Local oSay1 
+  Local oGetBar2
+  Local cGetBar2   := ''
   Private cTabela  := "ETIQUETA" + cEmpAnt
   Private cTabAli  := '_ET' 
   Private cCodPrd  := ''
   Private cDescPrd := ''
   Private cDescLin := ''
+  Private cLinOp   := ''	
   Private cNumOrdP := ''
   Private cStaEtiq := '' 
   Private cIteOrdP := ''
@@ -37,17 +41,18 @@ User Function CfApont()
   
   MsgRun('Aguarde','Abrindo arquivos',{||OpenTbl()})
   
-  DEFINE MSDIALOG oDlg TITLE "Apontamento de Produção: " FROM 000, 000  TO 140, 500 COLORS 0, 16777215 PIXEL
+  DEFINE MSDIALOG oDlg TITLE "Apontamento de ProduÃ§Ã£o - " + cUserName FROM 000, 000  TO 140, 500 COLORS 0, 16777215 PIXEL
 
     @ 002, 002 GROUP oGroup1 TO 064, 246 OF oDlg COLOR 0, 16777215 PIXEL
-    @ 030, 007 SAY oSay1 PROMPT "Cód. de Barras:" SIZE 040, 007 OF oDlg COLORS 0, 16777215 PIXEL
+    @ 030, 007 SAY oSay1 PROMPT "CÃ³d. de Barras:" SIZE 040, 007 OF oDlg COLORS 0, 16777215 PIXEL
     @ 028, 047 GET oGetBar VAR cGetBar SIZE 192, 010 OF oDlg  COLORS 0, 16777215 PIXEL Valid Iif(Valida(),InfoQtd(),.F.) 
     @ 040, 047 GET oGetBar2 VAR cGetBar2 SIZE 000, 000 OF oDlg  COLORS 0, 16777215 PIXEL                      
     
   ACTIVATE MSDIALOG oDlg CENTERED
   
   oDlg:End()
-  &cTabAli->(dbCloseArea())
+  _ET->(dbCloseArea())     
+  restArea(aMainArea)
 Return 
 //************************************************************************************************************************************
 Static Function Valida(cFile)
@@ -80,8 +85,9 @@ Static Function Valida(cFile)
   cQry += "  CASE WHEN ETQ.OP IS NULL THEN ' ' ELSE ETQ.OP END OP,                   " + CRLF
   cQry += "  CASE WHEN ETQ.CSTATUS IS NULL THEN ' ' ELSE ETQ.CSTATUS END CSTATUS_ETQ," + CRLF
   cQry += "  CASE WHEN ETQ.R_E_C_N_O_ IS NULL THEN 0 ELSE ETQ.R_E_C_N_O_ END ETQ_REC," + CRLF
-  cQry += "  CASE WHEN PA4.OP IS NULL THEN ' ' ELSE PA4.OP END OP_PA4,               " + CRLF
-  cQry += "  CASE WHEN PA4.CSTATUS IS NULL THEN ' ' ELSE PA4.CSTATUS END CSTATUS_PA4 " + CRLF
+  cQry += "  CASE WHEN PA4.PA4_COD IS NULL THEN ' ' ELSE PA4.PA4_COD END LIN_PA4,    " + CRLF
+  cQry += "  CASE WHEN PA4.PA4_OP IS NULL THEN ' ' ELSE PA4.PA4_OP END OP_PA4,       " + CRLF
+  cQry += "  CASE WHEN PA4.PA4_DESC IS NULL THEN ' ' ELSE PA4.PA4_DESC END DESC_PA4  " + CRLF  
   cQry += "FROM " + CRLF
   cQry += "	" + retSqlName("SC2") + " SC2 " + CRLF
   cQry += "JOIN " + CRLF
@@ -101,12 +107,14 @@ Static Function Valida(cFile)
   cQry += "ON " + CRLF
   cQry += "	C2_FILIAL = FILIAL AND     " + CRLF
   cQry += "	C2_NUM    =  OP    AND     " + CRLF
+  cQry += "	ETIQUETA ='" + AllTrim(cGetBar) + "'    AND     " + CRLF
   cQry += "	ETQ.D_E_L_E_T_ = ' '       " + CRLF
   cQry += "LEFT JOIN " + CRLF
   cQry += "	PA4990 PA4" + CRLF
   cQry += "ON" + CRLF
-  cQry += " C2_FILIAL = PA4.FILIAL AND " + CRLF
-  cQry += "	C2_NUM    = PA4.OP " + CRLF
+  cQry += " C2_FILIAL = PA4.PA4_FILIAL AND " + CRLF
+  cQry += "	C2_NUM    = PA4.PA4_OP AND " + CRLF
+  cQry += "	PA4.D_E_L_E_T_ =' ' " + CRLF
   cQry += "WHERE " + CRLF
   cQry += " C2_FILIAL = '" +cFilAnt +"' AND " + CRLF
   cQry += " C2_NUM    = '" + AllTrim(cGetBar) + "' AND " + CRLF
@@ -126,7 +134,7 @@ Static Function Valida(cFile)
   If nTotReg <= 0		
     cTMP->(dbCloseArea())
 	RestArea(aArea)	  		  		  	
-	msgAlert("Não há registros para essa Ordem de produção, favor verificar o cadastro de Ordens de produção!","Atenção!!!")
+	msgAlert("NÃ£o hÃ¡ registros para essa Ordem de produÃ§Ã£o, favor verificar o cadastro de Ordens de produÃ§Ã£o!","AtenÃ§Ã£o!!!")
 	cGetBar := Space(16)
 	oGetBar:Refresh() 
 	oDlg:Refresh()	  	
@@ -136,28 +144,31 @@ Static Function Valida(cFile)
   While cTMP->(!Eof())
     If Empty(cTMP->OP_PA4)
       lRet := .F.   
-      msgAlert("Etiqueta não ativa no setup, favor checar cadastro de setup de linha!","Atenção!!!")
+      msgAlert("Etiqueta nÃ£o ativa no setup, favor checar cadastro de setup de linha!","AtenÃ§Ã£o!!!")    
     ElseIf cTMP->B1_MSBLQL ='1'
       lRet := .F.   
-      msgAlert("O produto a ser apontado encontra-se bloqueado, favor verificar o cadastro do mesmo!","Atenção!!!")
+      msgAlert("O produto a ser apontado encontra-se bloqueado, favor verificar o cadastro do mesmo!","AtenÃ§Ã£o!!!")
     ElseIf cTMP->B1_TIPO  != 'PA'
       lRet := .F.   
-      msgAlert("Não é permitido apontamento de produção automático para produtos diferentes do tipo PA, entre em contato com o administrador do sistema!","Atenção!!!")							  	  	  
+      msgAlert("NÃ£o Ã© permitido apontamento de produÃ§Ã£o automÃ¡tico para produtos diferentes do tipo PA, entre em contato com o administrador do sistema!","AtenÃ§Ã£o!!!")							  	  	  
+    ElseIf cTMP->C2_DATRF !=' '
+      lRet := .F.   
+      msgAlert("ProduÃ§Ã£o jÃ¡ encerrada, favor verificar!","AtenÃ§Ã£o!!!")							  	  	      
     ElseIf cTMP->C2_STATUS != 'N'
       lRet := .F.
-      msgAlert("Não é permitido o apontamento de produção para OPs que não estejam em situação normal, favor verificar o cadastro da op!","Atenção!!!")
+      msgAlert("NÃ£o Ã© permitido o apontamento de produÃ§Ã£o para OPs que nÃ£o estejam em situaÃ§Ã£o normal, favor verificar o cadastro da op!","AtenÃ§Ã£o!!!")
     ElseIf cTMP->C2_TPOP != 'F'
       lRet := .F.
-      msgAlert("Não é permitido o apontamento de produção para OPs com tipo prevista, favor verificar o cadastro da op!","Atenção!!!")
+      msgAlert("NÃ£o Ã© permitido o apontamento de produÃ§Ã£o para OPs com tipo prevista, favor verificar o cadastro da op!","AtenÃ§Ã£o!!!")
     ElseIf cTMP->CSTATUS_ETQ = 'A'
       lRet := .F.   
-      msgAlert("Etiqueta já apontada anteriormente!","Atenção!!!")
+      msgAlert("Etiqueta jÃ¡ apontada anteriormente!","AtenÃ§Ã£o!!!")
     ElseIf cTMP->CSTATUS_ETQ = 'T'  
       lRet := .F.
-      msgAlert("Etiqueta já transferida!","Atenção!!!")
+      msgAlert("Etiqueta jÃ¡ transferida!","AtenÃ§Ã£o!!!")
     ElseIf cTMP->CSTATUS_ETQ = 'C'       
       lRet := .F.
-      msgAlert("Etiqueta cancelada!","Atenção!!!")
+      msgAlert("Etiqueta cancelada!","AtenÃ§Ã£o!!!")
     EndIf
     
     cDescPrd := AllTrim(cTMP->B1_DESC)
@@ -171,8 +182,9 @@ Static Function Valida(cFile)
     cNumOrdP := AllTrim(cTMP->C2_NUM)
     cIteOrdP := AllTrim(cTMP->C2_ITEM)
     cSeqOrdP := AllTrim(cTMP->C2_SEQUEN)
-    cDescLin := AllTrim(cTMP->CSTATUS_PA4)
+    cDescLin := AllTrim(cTMP->DESC_PA4)
     cStaEtiq := AllTrim(cTMP->CSTATUS_ETQ)
+    cLinOp   := cTMP->LIN_PA4 
     nRecEtiq := cTMP->ETQ_REC
     cTMP->(dbSkip())		
   EndDo   
@@ -188,7 +200,7 @@ Static Function Valida(cFile)
 Return( lRet ) 
 //************************************************************************************************************************************
 Static Function InfoQtd(cFile)
-  Local nQuant
+  Local nQnt
   Local nQuant := 0
   Local oBtnCnl
   Local oBtnOK
@@ -207,7 +219,7 @@ Static Function InfoQtd(cFile)
   Local oSay4
   Local oSay5
   Local oSay7
-  Local nOpc     := 1
+  Local nOpc     := 2
   Static oDlg2
 
   DEFINE MSDIALOG oDlg2 TITLE "Quantidade" FROM 000, 000  TO 260, 406 COLORS 0, 16777215 PIXEL
@@ -216,7 +228,7 @@ Static Function InfoQtd(cFile)
     @ 012, 007 SAY oSay1 PROMPT    "Num. OP:"     SIZE 025, 007 OF oDlg2 COLORS 0, 16777215 PIXEL
     @ 012, 032 SAY oNumOP PROMPT   cNumOrdP       SIZE 050, 007 OF oDlg2 COLORS 0, 16777215 PIXEL
     @ 022, 007 SAY oSay3 PROMPT    "Linha      :" SIZE 030, 007 OF oDlg2 COLORS 0, 16777215 PIXEL
-    @ 022, 032 SAY oLinha PROMPT   cDescLin       SIZE 025, 007 OF oDlg2 COLORS 0, 16777215 PIXEL
+    @ 022, 032 SAY oLinha PROMPT   cDescLin       SIZE 162, 007 OF oDlg2 COLORS 0, 16777215 PIXEL
     @ 032, 007 SAY oSay5 PROMPT    "Produto  :"   SIZE 025, 007 OF oDlg2 COLORS 0, 16777215 PIXEL
     @ 032, 032 SAY oPrdDesc PROMPT cDescPrd       SIZE 162, 007 OF oDlg2 COLORS 0, 16777215 PIXEL   
     @ 042, 007 SAY oSay2 PROMPT    "Pallets   :"  SIZE 025, 007 OF oDlg2 COLORS 0, 16777215 PIXEL
@@ -227,14 +239,14 @@ Static Function InfoQtd(cFile)
     @ 062, 167 SAY oNPBR PROMPT    StrZero(nLPallet * nHPallet,3) SIZE 025, 007 OF oDlg2 COLORS 0, 16777215 PIXEL
     @ 077, 002 GROUP oGroup2 TO 107, 200 PROMPT "Quantidade:  " OF oDlg2 COLOR 0, 16777215 PIXEL
     @ 087, 007 SAY oSay7 PROMPT "Informe a Quantidade:" SIZE 052, 007 OF oDlg2 COLORS 0, 16777215 PIXEL
-    @ 086, 062 MSGET nQuant VAR nQuant SIZE 127, 010 OF oDlg2 PICTURE '@<E 999,999.99' COLORS 0, 16777215 PIXEL valid ((nQuant > 0) .And.  (!nQuant <0))
-    DEFINE SBUTTON oBtnOK FROM 112, 020 TYPE 01 OF oDlg2  Action  oDlg2:End() ENABLE 
+    @ 086, 062 MSGET nQnt VAR nQuant SIZE 127, 010 OF oDlg2 PICTURE '@<E 999,999.99' COLORS 0, 16777215 PIXEL valid (nQuant >= 0.01)
+    DEFINE SBUTTON oBtnOK FROM 112, 020 TYPE 01 OF oDlg2  Action (nOpc:= 1, oDlg2:End()) ENABLE 
     DEFINE SBUTTON oBtnCnl FROM 112, 158 TYPE 02 OF oDlg2 Action (nOpc:= 2, oDlg2:End())ENABLE   
   ACTIVATE MSDIALOG oDlg2 CENTERED
   
   If nOpc == 1
-    If MsgYesNo('Confirmar a quantidade de ' + TransForm(nQuant,PesqPict( 'SD3', 'D3_QUANT' )),'Atenção!!!')
-    	MsgRun('Aguarde','Apontando produção...',{||Aponta(nQuant,cFile)})
+    If MsgYesNo('Confirmar a quantidade de ' + TransForm(nQuant,PesqPict( 'SD3', 'D3_QUANT' )),'AtenÃ§Ã£o!!!')
+    	MsgRun('Aguarde','Apontando produÃ§Ã£o...',{||Aponta(nQuant,cFile)})
     EndIf  	
   EndIf
   
@@ -246,37 +258,70 @@ Return
 //************************************************************************************************************************************
 Static Function Aponta(nQuant,cFile)
   Local aArea   := GetArea()
-  Local aVetor  := {}  
+  Local cNumSeq := ''
+  Local cTime   := ''
+  Local aVetor  := {}
+  Local cTM     := Alltrim(SuperGetMv( "MV_XTMPRO" , , "010"  )) 
+  Local lAtuemp := Alltrim(SuperGetMv( "MV_XATEMP" , , .F.    ))  
   lMsErroAuto   := .F.
   
+       
+  cTime   := Time()
   aVetor := {;
-              {'D3_OP'     , cNumOrdP+cIteOrdP+cSeqOrdP ,Nil},;
-              {'D3_COD'    , cCodPrd                    ,Nil},;
-              {'D3_QUANT'  , nQuant                     ,Nil},;
-              {'D3_PARCTOT', 'P'                        ,Nil},;
-              {'ATUEMP'    , 'T'                        ,Nil},;
-              {'D3_TM'     , '010'                      ,Nil},;
-              {'D3_QTMAIOR', 0                          ,Nil},;                        
-             }             
+             {'D3_OP'     , cNumOrdP+cIteOrdP+cSeqOrdP ,Nil},;
+             {'D3_COD'    , cCodPrd                    ,Nil},;
+             {'D3_QUANT'  , nQuant                     ,Nil},;
+             {'D3_PARCTOT', 'P'                        ,Nil},;
+             {'ATUEMP'    , 'T'                        ,Nil},;
+             {'D3_TM'     , cTM                        ,Nil},;
+             {'D3_QTMAIOR', 0                          ,Nil},;              
+             {'D3_XETIQ'  , cGetBar                    ,Nil},;
+             {'D3_XHORA'  , cTime                      ,Nil},;
+             {'D3_XLINHA' , cLinOp                     ,Nil};                                                                       
+            }
+                         
+  If lAtuEmp
+  	aAdd(aVetor,{'ATUEMP' , T ,Nil} )
+  EndIf
+  
   Begin Transaction
-    
-    If nRecEtiq = 0    	
-    	RecLock("_ET",.T.)
-    	_ET->FILIAL   := cFilant
-    	_ET->ETIQUETA := AllTrim(cGetBar)
-    	_ET->OP       := cNumOrdP
-    	_ET->PRODUTO  := cCodPrd
-    	_ET->LOTEPRD  := ''
-    	_ET->CSTATUS  := 'A'
-    	MsUnlock() 
-    EndIf
-      
+
     MsExecAuto({|x, y| mata250(x, y)},aVetor, 3 )
-    If lMsErroAuto
+    If lMsErroAuto    	    	
+    	DisarmTransaction()    	
     	MostraErro()
-    	DisarmTransaction()
     	Break
     EndIf
+
+    cNumSeq := SD3->D3_NUMSEQ
+
+    dbSelectArea("_ET")
+
+    If nRecEtiq = 0    	
+      RecLock("_ET",.T.)
+      _ET->FILIAL   := cFilant
+      _ET->ETIQUETA := AllTrim(cGetBar)
+      _ET->OP       := cNumOrdP
+      _ET->PRODUTO  := cCodPrd
+      _ET->LOTEPRD  := ''
+      _ET->CSTATUS  := 'A'
+      _ET->QTDAPT   := nQuant
+      _ET->CSEQAPT  := cNumSeq
+      MsUnlock() 
+    Else
+      dbGoto(nRecEtiq)	
+      RecLock("_ET",.F.)
+      _ET->FILIAL   := cFilant
+      _ET->ETIQUETA := AllTrim(cGetBar)
+      _ET->OP       := cNumOrdP
+      _ET->PRODUTO  := cCodPrd
+      _ET->LOTEPRD  := ''
+      _ET->CSTATUS  := 'A'
+      _ET->QTDAPT   := nQuant
+      _ET->CSEQAPT  := cNumSeq
+      MsUnlock()          
+    EndIf
+  
   End Transaction
   restArea(aArea)
 Return .T.
@@ -291,30 +336,35 @@ Static Function OpenTbl()
     aadd(aStru,{"ETIQUETA" ,"C",16,0})
     aadd(aStru,{"OP"       ,"C",Len(SD3->D3_OP),0})
     aadd(aStru,{"PRODUTO"  ,"C",Len(SD3->D3_COD),0})
-    aadd(aStru,{"LOTEPRD"  ,"C",Len(SD3->D3_LOTECTL),0})  		  	
+    aadd(aStru,{"LOTEPRD"  ,"C",Len(SD3->D3_LOTECTL),0})
     aadd(aStru,{"CSTATUS"  ,"C",01,0})
+    aadd(aStru,{"QTDAPT"   ,"N",12,2})  		  	
+    aadd(aStru,{"CSEQAPT"  ,"C",Len(SD3->D3_NUMSEQ),0})
+    aadd(aStru,{"QTDTRF"   ,"N",12,2})  		  	
+    aadd(aStru,{"CSEQTRF"  ,"C",Len(SD3->D3_NUMSEQ),0})    
     DBCreate(cTabela,aStru,"TOPCONN")
+    
+    If !tccanopen(cTabela,cTabela+'_01')
+      // Se o indice por nome nao existe, cria
+      USE (cTabela) ALIAS (&cTabAli) EXCLUSIVE NEW VIA "TOPCONN"    
+      DBCreateIndex(cTabela+'_01', "FILIAL+ETIQUETA" , {|| FILIAL+ETIQUETA }) 	
+      USE
+    EndIf
+    
+    If !tccanopen(cTabela,cTabela+'_02')  
+      USE (cTabela) ALIAS (&cTabAli) EXCLUSIVE NEW VIA "TOPCONN"       
+      DBCreateIndex(cTabela+'_02', "FILIAL+OP" , {|| FILIAL+OP })  
+      USE
+    EndIf
+
+    If !tccanopen(cTabela,cTabela+'_UNQ')    
+      USE (cTabela) ALIAS (&cTabAli) EXCLUSIVE NEW VIA "TOPCONN"           
+      TCUnique(cTabela, "FILIAL+ETIQUETA+OP")
+      USE
+    EndIf  
+       
   Endif
-  
-  If !tccanopen(cTabela,cTabela+'_01')
-    // Se o indice por nome nao existe, cria
-    USE (cTabela) ALIAS (&cTabAli) EXCLUSIVE NEW VIA "TOPCONN"    
-    DBCreateIndex(cTabela+'_01', "FILIAL+ETIQUETA" , {|| FILIAL+ETIQUETA }) 	
-    USE
-  EndIf
 
-  If !tccanopen(cTabela,cTabela+'_02')  
-    USE (cTabela) ALIAS (&cTabAli) EXCLUSIVE NEW VIA "TOPCONN"       
-    DBCreateIndex(cTabela+'_02', "FILIAL+OP" , {|| FILIAL+OP })  
-    USE
-  EndIf
-
-  If !tccanopen(cTabela,cTabela+'_UNQ')    
-    USE (cTabela) ALIAS (&cTabAli) EXCLUSIVE NEW VIA "TOPCONN"           
-    TCUnique(cTabela, "FILIAL+ETIQUETA+OP")
-    USE
-  EndIf  
-   
   // Abra o arquivo de agenda em modo compartilhado
   USE (cTabela) ALIAS &cTabAli SHARED NEW VIA "TOPCONN"
   // Liga o filtro para ignorar registros deletados 
