@@ -26,16 +26,15 @@ User Function CfEstorn()
   
   MsgRun('Aguarde','Abrindo arquivos',{||OpenTbl()})
   
-  DEFINE MSDIALOG oDlg TITLE "Estorno de Produção - " + cUserName FROM 000, 000  TO 140, 500 COLORS 0, 16777215 PIXEL
+  DEFINE MSDIALOG oDlg TITLE "Estorno de ProduÃ§Ã£o - " + cUserName FROM 000, 000  TO 140, 500 COLORS 0, 16777215 PIXEL
 
     @ 002, 002 GROUP oGroup1 TO 064, 246 OF oDlg COLOR 0, 16777215 PIXEL
-    @ 030, 007 SAY oSay1 PROMPT "Cód. de Barras:" SIZE 040, 007 OF oDlg COLORS 0, 16777215 PIXEL
+    @ 030, 007 SAY oSay1 PROMPT "CÃ³d. de Barras:" SIZE 040, 007 OF oDlg COLORS 0, 16777215 PIXEL
     @ 028, 047 GET oGetBar VAR cGetBar SIZE 192, 010 OF oDlg  COLORS 0, 16777215 PIXEL Valid (Valida(),oDlg:End()) 
     @ 040, 047 GET oGetBar2 VAR cGetBar2 SIZE 000, 000 OF oDlg  COLORS 0, 16777215 PIXEL                      
     
   ACTIVATE MSDIALOG oDlg CENTERED
   
-  oDlg:End()
   _ET->(dbCloseArea())     
   restArea(aMainArea)
 Return 
@@ -46,11 +45,13 @@ Static Function Valida()
   Local cTMP    := GetNextAlias()
   Local aArea   := GetArea()
   Local nD3Rec  := 0 
+  Local nETRec  := 0
+  Local cChave  := ''
   Local nQuant  := 0
   Local cNumOP  := ''
   Local cTM     := ''
   
-  If !MsgYesNo('Deseja Realmente estornar o movimento da etiqueta - ' + AllTrim(cGetBar) ,'Atenção!!!')
+  If !MsgYesNo('Deseja Realmente estornar o movimento da etiqueta - ' + AllTrim(cGetBar) ,'AtenÃ§Ã£o!!!')
     RestArea(aArea)
     return .F.
   EndIf
@@ -88,16 +89,17 @@ Static Function Valida()
   cQry += "  CASE WHEN SD3.R_E_C_N_O_ IS NULL THEN ' ' ELSE SD3.D3_ESTORNO END SD3_ESTORNO, " + CRLF
   cQry += "  CASE WHEN SD3.R_E_C_N_O_ IS NULL THEN ' ' ELSE SD3.D3_OP END SD3_OP, " + CRLF
   cQry += "  CASE WHEN SD3.R_E_C_N_O_ IS NULL THEN ' ' ELSE SD3.D3_TM END SD3_TM, " + CRLF
-  cQry += "  CASE WHEN SD3.R_E_C_N_O_ IS NULL THEN 0 ELSE SD3.D3_QUANT END SD3_QTD   " + CRLF
+  cQry += "  CASE WHEN SD3.R_E_C_N_O_ IS NULL THEN 0 ELSE SD3.D3_QUANT END SD3_QTD,   " + CRLF
+  cQry += "  CASE WHEN SD3.R_E_C_N_O_ IS NULL THEN ' ' ELSE SD3.D3_CF END SD3_CF  " + CRLF 
   cQry += "FROM " + CRLF
   cQry += "	" + retSqlName("SC2") + " SC2 " + CRLF
   cQry += "JOIN " + CRLF
   cQry += "	" + retSqlName("SB1") + " SB1 " + CRLF
   cQry += "ON " + CRLF
-  //cQry += "   C2_FILIAL = B1_FILIAL AND  " + CRLF
+  cQry += " C2_FILIAL = B1_FILIAL AND  " + CRLF
   cQry += "	C2_PRODUTO = B1_COD AND    " + CRLF
   cQry += "	SB1.D_E_L_E_T_ =' '	       " + CRLF
-  cQry += "LEFT JOIN
+  cQry += "LEFT JOIN  " + CRLF
   cQry += "	" + retSqlName("SB5") + " SB5 " + CRLF
   cQry += "ON " + CRLF
   cQry += "	B1_FILIAL = B5_FILIAL AND   " + CRLF
@@ -107,16 +109,16 @@ Static Function Valida()
   cQry += "	" + cTabela + " ETQ" + CRLF
   cQry += "ON " + CRLF
   cQry += "	C2_FILIAL = FILIAL AND     " + CRLF
-  cQry += "	C2_NUM    =  OP    AND     " + CRLF
+  cQry += "	C2_NUM+C2_ITEM+C2_SEQUEN  =  OP    AND     " + CRLF
   cQry += "	ETIQUETA ='" + AllTrim(cGetBar) + "'    AND     " + CRLF
   cQry += "	ETQ.D_E_L_E_T_ = ' '       " + CRLF
   cQry += "LEFT JOIN " + CRLF
   cQry += "	" + retSqlName("PA4") + " PA4 " + CRLF
   cQry += "ON" + CRLF
   cQry += " C2_FILIAL = PA4.PA4_FILIAL AND " + CRLF
-  cQry += "	C2_NUM    = PA4.PA4_OP AND " + CRLF
+  cQry += "	C2_NUM+C2_ITEM+C2_SEQUEN = PA4.PA4_OP AND " + CRLF
   cQry += "	PA4.D_E_L_E_T_ =' ' " + CRLF
-  cQry += "LEFT JOIN " + CRLF
+  cQry += "LEFT JOIN  " + CRLF
   cQry += "	" + retSqlName("SD3") + " SD3 " + CRLF
   cQry += "ON" + CRLF
   cQry += " C2_FILIAL = D3_FILIAL AND " + CRLF
@@ -129,10 +131,11 @@ Static Function Valida()
   cQry += " SD3.D_E_L_E_T_ =' ' " + CRLF
   cQry += "WHERE " + CRLF
   cQry += " C2_FILIAL = '" +cFilAnt +"' AND " + CRLF
-  cQry += " C2_NUM    = '" + AllTrim(cGetBar) + "' AND " + CRLF
+  cQry += " C2_NUM    = '" + Substr(AllTrim(cGetBar),10,6) + "' AND " + CRLF
   cQry += " SC2.D_E_L_E_T_ =' ' "
   
-  MemoWrite('C:\Temp_Msiga\qryEst.sql',cQry)   	
+  MemoWrite('C:\Temp_Msiga\qryEst.sql',cQry) 
+    	
   If Select( cTMP ) <> 0
 	dbSelectArea( cTMP )
 	dbCloseArea()
@@ -146,7 +149,7 @@ Static Function Valida()
   If nTotReg <= 0		
     cTMP->(dbCloseArea())
 	RestArea(aArea)	  		  		  	
-	msgAlert("Não há registros para essa Ordem de produção, favor verificar o cadastro de Ordens de produção!","Atenção!!!")
+	msgAlert("NÃ£o hÃ¡ registros para essa Ordem de produÃ§Ã£o, favor verificar o cadastro de Ordens de produÃ§Ã£o!","AtenÃ§Ã£o!!!")
 	cGetBar := Space(16)
 	oGetBar:Refresh() 
 	oDlg:Refresh()	  	
@@ -156,82 +159,86 @@ Static Function Valida()
   While cTMP->(!Eof())
     If Empty(cTMP->OP_PA4)
       lRet := .F.   
-      msgAlert("Etiqueta não ativa no setup, favor checar cadastro de setup de linha!","Atenção!!!")    
+      msgAlert("Etiqueta nÃ£o ativa no setup, favor checar cadastro de setup de linha!","AtenÃ§Ã£o!!!")    
     ElseIf cTMP->B1_MSBLQL ='1'
       lRet := .F.   
-      msgAlert("O produto a ser estornado encontra-se bloqueado, favor verificar o cadastro do mesmo!","Atenção!!!")
+      msgAlert("O produto a ser estornado encontra-se bloqueado, favor verificar o cadastro do mesmo!","AtenÃ§Ã£o!!!")
     ElseIf cTMP->B1_TIPO  != 'PA'
       lRet := .F.   
-      msgAlert("Não é permitido estorno de produção automático para produtos diferentes do tipo PA, entre em contato com o administrador do sistema!","Atenção!!!")							  	  	  
+      msgAlert("NÃ£o Ã© permitido estorno de produÃ§Ã£o automÃ¡tico para produtos diferentes do tipo PA, entre em contato com o administrador do sistema!","AtenÃ§Ã£o!!!")							  	  	  
     ElseIf cTMP->C2_DATRF !=' '
       lRet := .F.   
-      msgAlert("Produção já encerrada, favor verificar!","Atenção!!!")							  	  	      
+      msgAlert("ProduÃ§Ã£o jÃ¡ encerrada, favor verificar!","AtenÃ§Ã£o!!!")							  	  	      
     ElseIf cTMP->C2_STATUS != 'N'
       lRet := .F.
-      msgAlert("Não é permitido o estorno de produção para OPs que não estejam em situação normal, favor verificar o cadastro da op!","Atenção!!!")
+      msgAlert("NÃ£o Ã© permitido o estorno de produÃ§Ã£o para OPs que nÃ£o estejam em situaÃ§Ã£o normal, favor verificar o cadastro da op!","AtenÃ§Ã£o!!!")
     ElseIf cTMP->C2_TPOP != 'F'
       lRet := .F.
-      msgAlert("Não é permitido o estorno de produção para OPs com tipo prevista, favor verificar o cadastro da op!","Atenção!!!")
+      msgAlert("NÃ£o Ã© permitido o estorno de produÃ§Ã£o para OPs com tipo prevista, favor verificar o cadastro da op!","AtenÃ§Ã£o!!!")
     ElseIf cTMP->CSTATUS_ETQ = 'T'  
       lRet := .F.
-      msgAlert("Etiqueta já transferida!","Atenção!!!")
+      msgAlert("Etiqueta jÃ¡ transferida!","AtenÃ§Ã£o!!!")
     ElseIf cTMP->CSTATUS_ETQ = 'C'       
       lRet := .F.
-      msgAlert("Etiqueta cancelada!","Atenção!!!")
+      msgAlert("Etiqueta cancelada!","AtenÃ§Ã£o!!!")
+    ElseIf cTMP->ETQ_REC = 0       
+      lRet := .F.
+      msgAlert("Etiqueta nÃ£o apontada!","AtenÃ§Ã£o!!!") 
     ElseIf cTMP->SD3_REC = 0       
       lRet := .F.
-      msgAlert("Movimento não encontrado!","Atenção!!!")      
+      msgAlert("Movimento nÃ£o encontrado!","AtenÃ§Ã£o!!!")      
     ElseIf cTMP->SD3_ESTORNO != ' '       
       lRet := .F.
-      msgAlert("Movimento já estornado!","Atenção!!!")      
+      msgAlert("Movimento jÃ¡ estornado!","AtenÃ§Ã£o!!!")      
     EndIf
+    cChave  := cTMP->C2_FILIAL+cTMP->C2_PRODUTO+cTMP->C2_LOCAL+cTMP->CSEQAPT_ETQ+cTMP->SD3_CF
     nD3Rec  := cTMP->SD3_REC
+    nETRec  := cTMP->ETQ_REC
     cTMP->(dbSkip())		
   EndDo   
   cTMP->(dbCloseArea())
   RestArea(aArea)  	
   
   If lRet
-    lRet := MsgRun('Aguarde','Processando o estorno',{||Estorna(nD3Rec)})     
+    lRet := MsgRun('Aguarde','Processando o estorno',{||Estorna(nETRec,nD3Rec,cChave)})     
   EndIf
 Return( lRet ) 
 //************************************************************************************************************************************
-Static Function Estorna(nD3Rec)
+Static Function Estorna(nETRec,nD3Rec,cChave)
   Local aArea   := GetArea()  
   Local cTime   := ''  
   Local aVetor  := {}    
   lMsErroAuto   := .F.
         
-  
   dbSelectArea("SD3")
-  SD3->(dbSetOrder(1))
-  SD3->(dbGoTo(nD3Rec))
-  cNumOP  := SD3->D3_OP
-  cTM     := SD3->D3_TM
-  nQuant  := SD3->D3_QUANT
-  cNdoc   := SD3->D3_DOC
-  cSequ   := SD3->D3_NUMSEQ        
-   
-  If SD3->D3_ESTORNO == ' '
-   	aVetor := {;
-   	            {'D3_OP'   ,cNumOp   ,Nil},;
-   	            {'D3_QUANT',nQuant   ,Nil},;
-   	            {'D3_TM'   ,'999'    ,Nil},;
-   	            {'D3_DOC'  ,cNdoc    ,Nil},;
-   	            {'D3_NUMSEQ'  ,cSequ    ,Nil},;
-   	           }
-     Begin Transaction
-     MsExecAuto({|x, y| mata250(x, y)},aVetor, 5 )
-        
-      If lMsErroAuto
-       	DisarmTransaction()
-       	MostraErro()
-       	Break
-      EndIf    
-      
-     End Transaction       	           
-    EndIf
-   
+  SD3->(dbSetOrder(3))
+  If dbSeek(cChave)
+  	If SD3->D3_ESTORNO == ' '
+  		SD3->(dbGoto(nD3Rec)) //Forco o ponteiro na marra
+  		aVetor := {;
+  		           {'D3_DOC'    ,SD3->D3_DOC      , Nil},;
+  		           {'D3_COD'    ,SD3->D3_COD      , Nil},;
+  		           {'INDEX'     ,2                , Nil};
+  		          }
+  		Begin Transaction
+  		 MsExecAuto({|x, y| mata250(x, y)},aVetor, 5 )
+  		 
+  		 dbSelectArea("_ET")
+  		 _ET->(dbGoto(nETRec))
+  		 RecLock("_ET",.F.)
+           _ET->CSTATUS  := ' '
+           _ET->QTDAPT   := 0
+           _ET->CSEQAPT  := ' '
+         MsUnlock()
+           
+  		 If lMsErroAuto
+  		 	DisarmTransaction()
+  		 	MostraErro()
+  		 	Break
+  		 EndIf
+  		End Transaction
+  	EndIf
+  EndIf   
   restArea(aArea)
 Return(Iif (lMsErroAuto , .F. ,.T.))
 //************************************************************************************************************************************
@@ -255,27 +262,27 @@ Static Function OpenTbl()
     
     If !tccanopen(cTabela,cTabela+'_01')
       // Se o indice por nome nao existe, cria
-      USE (cTabela) ALIAS (&cTabAli) EXCLUSIVE NEW VIA "TOPCONN"    
+      USE (cTabela) ALIAS "_ET" EXCLUSIVE NEW VIA "TOPCONN"    
       DBCreateIndex(cTabela+'_01', "FILIAL+ETIQUETA" , {|| FILIAL+ETIQUETA }) 	
       USE
     EndIf
     
     If !tccanopen(cTabela,cTabela+'_02')  
-      USE (cTabela) ALIAS (&cTabAli) EXCLUSIVE NEW VIA "TOPCONN"       
+      USE (cTabela) ALIAS  "_ET"  EXCLUSIVE NEW VIA "TOPCONN"       
       DBCreateIndex(cTabela+'_02', "FILIAL+OP" , {|| FILIAL+OP })  
       USE
     EndIf
 
     If !tccanopen(cTabela,cTabela+'_UNQ')    
-      USE (cTabela) ALIAS (&cTabAli) EXCLUSIVE NEW VIA "TOPCONN"           
-      TCUnique(cTabela, "FILIAL+ETIQUETA+OP")
+      USE (cTabela) ALIAS  "_ET" EXCLUSIVE NEW VIA "TOPCONN"           
+      TCUnique(cTabela, "FILIAL+ETIQUETA")
       USE
     EndIf  
        
   Endif
 
   // Abra o arquivo de agenda em modo compartilhado
-  USE (cTabela) ALIAS &cTabAli SHARED NEW VIA "TOPCONN"
+  USE (cTabela) ALIAS  "_ET" SHARED NEW VIA "TOPCONN"
   // Liga o filtro para ignorar registros deletados 
   SET DELETED ON
   // Abre os indices, seleciona ordem por ID
@@ -285,4 +292,4 @@ Static Function OpenTbl()
   DbSetOrder(1)
   DbGoTop()
 
-Return .T.         
+Return .T.     
