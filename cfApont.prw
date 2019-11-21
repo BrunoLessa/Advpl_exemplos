@@ -41,10 +41,10 @@ User Function CfApont()
   
   MsgRun('Aguarde','Abrindo arquivos',{||OpenTbl()})
   
-  DEFINE MSDIALOG oDlg TITLE "Apontamento de ProduÃ§Ã£o - " + cUserName FROM 000, 000  TO 140, 500 COLORS 0, 16777215 PIXEL
+  DEFINE MSDIALOG oDlg TITLE "Apontamento de Produção - " + cUserName FROM 000, 000  TO 140, 500 COLORS 0, 16777215 PIXEL
 
     @ 002, 002 GROUP oGroup1 TO 064, 246 OF oDlg COLOR 0, 16777215 PIXEL
-    @ 030, 007 SAY oSay1 PROMPT "CÃ³d. de Barras:" SIZE 040, 007 OF oDlg COLORS 0, 16777215 PIXEL
+    @ 030, 007 SAY oSay1 PROMPT "Cód. de Barras:" SIZE 040, 007 OF oDlg COLORS 0, 16777215 PIXEL
     @ 028, 047 GET oGetBar VAR cGetBar SIZE 192, 010 OF oDlg  COLORS 0, 16777215 PIXEL Valid Iif(Valida(),InfoQtd(),.F.) 
     @ 040, 047 GET oGetBar2 VAR cGetBar2 SIZE 000, 000 OF oDlg  COLORS 0, 16777215 PIXEL                      
     
@@ -133,9 +133,10 @@ Static Function Valida(cFile)
   If nTotReg <= 0		
     cTMP->(dbCloseArea())
 	RestArea(aArea)	  		  		  	
-	msgAlert("NÃ£o hÃ¡ registros para essa Ordem de produÃ§Ã£o, favor verificar o cadastro de Ordens de produÃ§Ã£o!","AtenÃ§Ã£o!!!")
+	msgAlert("Não há registros para essa Ordem de produção, favor verificar o cadastro de Ordens de produção!","Atenção!!!")
 	cGetBar := Space(16)
 	oGetBar:Refresh() 
+	oGetBar:SetFocus()
 	oDlg:Refresh()	  	
 	return .F.				
   EndIf 	
@@ -143,31 +144,31 @@ Static Function Valida(cFile)
   While cTMP->(!Eof())
     If Empty(cTMP->OP_PA4)
       lRet := .F.   
-      msgAlert("Etiqueta nÃ£o ativa no setup, favor checar cadastro de setup de linha!","AtenÃ§Ã£o!!!")    
+      msgAlert("Etiqueta não ativa no setup, favor checar cadastro de setup de linha!","Atenção!!!")    
     ElseIf cTMP->B1_MSBLQL ='1'
       lRet := .F.   
-      msgAlert("O produto a ser apontado encontra-se bloqueado, favor verificar o cadastro do mesmo!","AtenÃ§Ã£o!!!")
+      msgAlert("O produto a ser apontado encontra-se bloqueado, favor verificar o cadastro do mesmo!","Atenção!!!")
     ElseIf cTMP->B1_TIPO  != 'PA'
       lRet := .F.   
-      msgAlert("NÃ£o Ã© permitido apontamento de produÃ§Ã£o automÃ¡tico para produtos diferentes do tipo PA, entre em contato com o administrador do sistema!","AtenÃ§Ã£o!!!")							  	  	  
+      msgAlert("Não é permitido apontamento de produção automático para produtos diferentes do tipo PA, entre em contato com o administrador do sistema!","Atenção!!!")							  	  	  
     ElseIf cTMP->C2_DATRF !=' '
       lRet := .F.   
-      msgAlert("ProduÃ§Ã£o jÃ¡ encerrada, favor verificar!","AtenÃ§Ã£o!!!")							  	  	      
+      msgAlert("Produção já encerrada, favor verificar!","Atenção!!!")							  	  	      
     ElseIf cTMP->C2_STATUS != 'N'
       lRet := .F.
-      msgAlert("NÃ£o Ã© permitido o apontamento de produÃ§Ã£o para OPs que nÃ£o estejam em situaÃ§Ã£o normal, favor verificar o cadastro da op!","AtenÃ§Ã£o!!!")
+      msgAlert("Não é permitido o apontamento de produção para OPs que não estejam em situação normal, favor verificar o cadastro da op!","Atenção!!!")
     ElseIf cTMP->C2_TPOP != 'F'
       lRet := .F.
-      msgAlert("NÃ£o Ã© permitido o apontamento de produÃ§Ã£o para OPs com tipo prevista, favor verificar o cadastro da op!","AtenÃ§Ã£o!!!")
+      msgAlert("Não é permitido o apontamento de produção para OPs com tipo prevista, favor verificar o cadastro da op!","Atenção!!!")
     ElseIf cTMP->CSTATUS_ETQ = 'A'
       lRet := .F.   
-      msgAlert("Etiqueta jÃ¡ apontada anteriormente!","AtenÃ§Ã£o!!!")
+      msgAlert("Etiqueta já apontada anteriormente!","Atenção!!!")
     ElseIf cTMP->CSTATUS_ETQ = 'T'  
       lRet := .F.
-      msgAlert("Etiqueta jÃ¡ transferida!","AtenÃ§Ã£o!!!")
+      msgAlert("Etiqueta já transferida!","Atenção!!!")
     ElseIf cTMP->CSTATUS_ETQ = 'C'       
       lRet := .F.
-      msgAlert("Etiqueta cancelada!","AtenÃ§Ã£o!!!")
+      msgAlert("Etiqueta cancelada!","Atenção!!!")
     EndIf
     
     cDescPrd := AllTrim(cTMP->B1_DESC)
@@ -192,7 +193,8 @@ Static Function Valida(cFile)
   
   If !lRet
     cGetBar := Space(16)
-    oGetBar:Refresh() 
+    oGetBar:Refresh()
+    oGetBar:SetFocus() 
     oDlg:Refresh()
   EndIf
 			
@@ -244,13 +246,14 @@ Static Function InfoQtd(cFile)
   ACTIVATE MSDIALOG oDlg2 CENTERED
   
   If nOpc == 1
-    If MsgYesNo('Confirmar a quantidade de ' + TransForm(nQuant,PesqPict( 'SD3', 'D3_QUANT' )),'AtenÃ§Ã£o!!!')
-    	MsgRun('Aguarde','Apontando produÃ§Ã£o...',{||Aponta(nQuant,cFile)})
+    If MsgYesNo('Confirmar a quantidade de ' + TransForm(nQuant,PesqPict( 'SD3', 'D3_QUANT' )),'Atenção!!!')
+    	MsgRun('Aguarde','Apontando produção...',{||Aponta(nQuant,cFile)})
     EndIf  	
   EndIf
   
   cGetBar := Space(16)
   oGetBar:Refresh() 
+  oGetBar:SetFocus()
   oDlg:Refresh()
     
 Return
