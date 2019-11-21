@@ -26,10 +26,10 @@ User Function CfEstorn()
   
   MsgRun('Aguarde','Abrindo arquivos',{||OpenTbl()})
   
-  DEFINE MSDIALOG oDlg TITLE "Estorno de ProduÃ§Ã£o - " + cUserName FROM 000, 000  TO 140, 500 COLORS 0, 16777215 PIXEL
+  DEFINE MSDIALOG oDlg TITLE "Estorno de Produção - " + cUserName FROM 000, 000  TO 140, 500 COLORS 0, 16777215 PIXEL
 
     @ 002, 002 GROUP oGroup1 TO 064, 246 OF oDlg COLOR 0, 16777215 PIXEL
-    @ 030, 007 SAY oSay1 PROMPT "CÃ³d. de Barras:" SIZE 040, 007 OF oDlg COLORS 0, 16777215 PIXEL
+    @ 030, 007 SAY oSay1 PROMPT "Cód. de Barras:" SIZE 040, 007 OF oDlg COLORS 0, 16777215 PIXEL
     @ 028, 047 GET oGetBar VAR cGetBar SIZE 192, 010 OF oDlg  COLORS 0, 16777215 PIXEL Valid (Valida(),oDlg:End()) 
     @ 040, 047 GET oGetBar2 VAR cGetBar2 SIZE 000, 000 OF oDlg  COLORS 0, 16777215 PIXEL                      
     
@@ -51,7 +51,7 @@ Static Function Valida()
   Local cNumOP  := ''
   Local cTM     := ''
   
-  If !MsgYesNo('Deseja Realmente estornar o movimento da etiqueta - ' + AllTrim(cGetBar) ,'AtenÃ§Ã£o!!!')
+  If !MsgYesNo('Deseja Realmente estornar o movimento da etiqueta - ' + AllTrim(cGetBar) ,'Atenção!!!')
     RestArea(aArea)
     return .F.
   EndIf
@@ -149,7 +149,7 @@ Static Function Valida()
   If nTotReg <= 0		
     cTMP->(dbCloseArea())
 	RestArea(aArea)	  		  		  	
-	msgAlert("NÃ£o hÃ¡ registros para essa Ordem de produÃ§Ã£o, favor verificar o cadastro de Ordens de produÃ§Ã£o!","AtenÃ§Ã£o!!!")
+	msgAlert("Não há registros para essa Ordem de produção, favor verificar o cadastro de Ordens de produção!","Atenção!!!")
 	cGetBar := Space(16)
 	oGetBar:Refresh() 
 	oDlg:Refresh()	  	
@@ -159,37 +159,37 @@ Static Function Valida()
   While cTMP->(!Eof())
     If Empty(cTMP->OP_PA4)
       lRet := .F.   
-      msgAlert("Etiqueta nÃ£o ativa no setup, favor checar cadastro de setup de linha!","AtenÃ§Ã£o!!!")    
+      msgAlert("Etiqueta não ativa no setup, favor checar cadastro de setup de linha!","Atenção!!!")    
     ElseIf cTMP->B1_MSBLQL ='1'
       lRet := .F.   
-      msgAlert("O produto a ser estornado encontra-se bloqueado, favor verificar o cadastro do mesmo!","AtenÃ§Ã£o!!!")
+      msgAlert("O produto a ser estornado encontra-se bloqueado, favor verificar o cadastro do mesmo!","Atenção!!!")
     ElseIf cTMP->B1_TIPO  != 'PA'
       lRet := .F.   
-      msgAlert("NÃ£o Ã© permitido estorno de produÃ§Ã£o automÃ¡tico para produtos diferentes do tipo PA, entre em contato com o administrador do sistema!","AtenÃ§Ã£o!!!")							  	  	  
+      msgAlert("Não é permitido estorno de produção automático para produtos diferentes do tipo PA, entre em contato com o administrador do sistema!","Atenção!!!")							  	  	  
     ElseIf cTMP->C2_DATRF !=' '
       lRet := .F.   
-      msgAlert("ProduÃ§Ã£o jÃ¡ encerrada, favor verificar!","AtenÃ§Ã£o!!!")							  	  	      
+      msgAlert("Produção já encerrada, favor verificar!","Atenção!!!")							  	  	      
     ElseIf cTMP->C2_STATUS != 'N'
       lRet := .F.
-      msgAlert("NÃ£o Ã© permitido o estorno de produÃ§Ã£o para OPs que nÃ£o estejam em situaÃ§Ã£o normal, favor verificar o cadastro da op!","AtenÃ§Ã£o!!!")
+      msgAlert("Não é permitido o estorno de produção para OPs que não estejam em situação normal, favor verificar o cadastro da op!","Atenção!!!")
     ElseIf cTMP->C2_TPOP != 'F'
       lRet := .F.
-      msgAlert("NÃ£o Ã© permitido o estorno de produÃ§Ã£o para OPs com tipo prevista, favor verificar o cadastro da op!","AtenÃ§Ã£o!!!")
+      msgAlert("Não é permitido o estorno de produção para OPs com tipo prevista, favor verificar o cadastro da op!","Atenção!!!")
     ElseIf cTMP->CSTATUS_ETQ = 'T'  
       lRet := .F.
-      msgAlert("Etiqueta jÃ¡ transferida!","AtenÃ§Ã£o!!!")
+      msgAlert("Etiqueta já transferida!","Atenção!!!")
     ElseIf cTMP->CSTATUS_ETQ = 'C'       
       lRet := .F.
-      msgAlert("Etiqueta cancelada!","AtenÃ§Ã£o!!!")
+      msgAlert("Etiqueta cancelada!","Atenção!!!")
     ElseIf cTMP->ETQ_REC = 0       
       lRet := .F.
-      msgAlert("Etiqueta nÃ£o apontada!","AtenÃ§Ã£o!!!") 
+      msgAlert("Etiqueta não apontada!","Atenção!!!") 
     ElseIf cTMP->SD3_REC = 0       
       lRet := .F.
-      msgAlert("Movimento nÃ£o encontrado!","AtenÃ§Ã£o!!!")      
+      msgAlert("Movimento não encontrado!","Atenção!!!")      
     ElseIf cTMP->SD3_ESTORNO != ' '       
       lRet := .F.
-      msgAlert("Movimento jÃ¡ estornado!","AtenÃ§Ã£o!!!")      
+      msgAlert("Movimento já estornado!","Atenção!!!")      
     EndIf
     cChave  := cTMP->C2_FILIAL+cTMP->C2_PRODUTO+cTMP->C2_LOCAL+cTMP->CSEQAPT_ETQ+cTMP->SD3_CF
     nD3Rec  := cTMP->SD3_REC
@@ -226,9 +226,9 @@ Static Function Estorna(nETRec,nD3Rec,cChave)
   		 dbSelectArea("_ET")
   		 _ET->(dbGoto(nETRec))
   		 RecLock("_ET",.F.)
-           _ET->CSTATUS  := ' '
-           _ET->QTDAPT   := 0
-           _ET->CSEQAPT  := ' '
+           _ET->CSTATUS  := 'C'
+           //_ET->QTDAPT   := 0
+           //_ET->CSEQAPT  := ' '
          MsUnlock()
            
   		 If lMsErroAuto
